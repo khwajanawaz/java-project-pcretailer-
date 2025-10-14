@@ -10,23 +10,23 @@ Computer Models - Computer models have an interface hierarchy (ComputerModel -Pr
 - Fulfilment generates a FulfillmentPlan which sums manufacturer and custom part count; analytics are done on-a-fly to eliminate the need to re-process order history.
 JUnit 5 tests are all validation, immutability, lifecycle rules, and analytics edge cases (such as alphabetical tie-breakers).
 
- Interfaces
-1.	ComputerModel
-Purpose:   Describes a template of computer model in general that can be offered by the vendor.
-Type: It’s an interface (not a class) which means it does not provide the implementation in code.
-Rule:  All parts in the collection should be non-empty string.
-Usage: Implemented by classes like PresetModel or CustomModel to ensure consistent structure.
-Key methods:
-•	getName() → gets unique name of the model.
-•	getParts() → return all the correspoding parts of its model.
+ ## Interfaces
+# 1.	ComputerModel
+- Purpose:   Describes a template of computer model in general that can be offered by the vendor.
+- Type: It’s an interface (not a class) which means it does not provide the implementation in code.
+- Rule:  All parts in the collection should be non-empty string.
+- Usage: Implemented by classes like PresetModel or CustomModel to ensure consistent structure.
+# Key methods:
+-	getName() → gets unique name of the model.
+-	getParts() → return all the correspoding parts of its model.
 
-2.	CustomComputerModel
-Purpose: Defines a customizable version of a computer model that can add or remove parts..
-Type: It’s an interface that extends ComputerModel.
-Immutability: No in-place changes — every modification creates a new instance.
-Key Methods:
-•	withPart(String part) → adds a part and returns a new model.
-•	withoutPart(String part) → removes a part and returns a new model.
+# 2.	CustomComputerModel
+- Purpose: Defines a customizable version of a computer model that can add or remove parts..
+- Type: It’s an interface that extends ComputerModel.
+- Immutability: No in-place changes — every modification creates a new instance.
+#Key Methods:
+-	withPart(String part) → adds a part and returns a new model.
+-	withoutPart(String part) → removes a part and returns a new model.
 
 3.	PresetComputerModel
 Purpose:  Marker/contract for preset vendor models (fixed bill of materials).
