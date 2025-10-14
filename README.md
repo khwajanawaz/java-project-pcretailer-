@@ -1,4 +1,4 @@
- # PC Retailer Order System – Design Notes
+## PC Retailer Order System – Design Notes
 
 # Overview
 The system is a model of a retailer who sells preset and custom PCs, handles credit card backed orders, and conducts fulfilment analytics. OrderService is the main component and coordinates the process of making orders, cancelling the orders, fulfilling the orders and reporting and maintaining the domain objects as immutable.
@@ -24,7 +24,7 @@ JUnit 5 tests are all validation, immutability, lifecycle rules, and analytics e
 - Purpose: Defines a customizable version of a computer model that can add or remove parts..
 - Type: It’s an interface that extends ComputerModel.
 - Immutability: No in-place changes — every modification creates a new instance.
-#Key Methods:
+# Key Methods:
 -	withPart(String part) → adds a part and returns a new model.
 -	withoutPart(String part) → removes a part and returns a new model.
 
