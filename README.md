@@ -1,4 +1,4 @@
-# PC Retailer Order System – Design Notes
+ # PC Retailer Order System – Design Notes
 
 # Overview
 The system is a model of a retailer who sells preset and custom PCs, handles credit card backed orders, and conducts fulfilment analytics. OrderService is the main component and coordinates the process of making orders, cancelling the orders, fulfilling the orders and reporting and maintaining the domain objects as immutable.
@@ -10,141 +10,137 @@ Computer Models - Computer models have an interface hierarchy (ComputerModel -Pr
 - Fulfilment generates a FulfillmentPlan which sums manufacturer and custom part count; analytics are done on-a-fly to eliminate the need to re-process order history.
 JUnit 5 tests are all validation, immutability, lifecycle rules, and analytics edge cases (such as alphabetical tie-breakers).
 
-## UML Class Diagram
-```plantuml
-@startuml
+ Interfaces
+1.	ComputerModel
+Purpose:   Describes a template of computer model in general that can be offered by the vendor.
+Type: It’s an interface (not a class) which means it does not provide the implementation in code.
+Rule:  All parts in the collection should be non-empty string.
+Usage: Implemented by classes like PresetModel or CustomModel to ensure consistent structure.
+Key methods:
+•	getName() → gets unique name of the model.
+•	getParts() → return all the correspoding parts of its model.
 
-interface ComputerModel {
-  +String getName()
-  +Set<String> getParts()
-}
+2.	CustomComputerModel
+Purpose: Defines a customizable version of a computer model that can add or remove parts..
+Type: It’s an interface that extends ComputerModel.
+Immutability: No in-place changes — every modification creates a new instance.
+Key Methods:
+•	withPart(String part) → adds a part and returns a new model.
+•	withoutPart(String part) → removes a part and returns a new model.
 
-interface PresetComputerModel
-interface CustomComputerModel {
-  +CustomComputerModel withPart(String)
-  +CustomComputerModel withoutPart(String)
-}
+3.	PresetComputerModel
+Purpose:  Marker/contract for preset vendor models (fixed bill of materials).
+•	PresetComputerModel is an interface extending ComputerModel.
+•	It represents a factory preset (pre-configured) computer model.
+•	Used for vendor-specific models with a fixed parts list.
+•	Encourages consistent access to name, parts, and manufacturer across implementations.
+Adds one method:   getManufacturer() to identify the maker.
+Key methods: static PresetModel of(...) – factory to build a preset model from manufacturer/name/parts.
 
-ComputerModel <|-- PresetComputerModel
-ComputerModel <|-- CustomComputerModel
+4.	CustomerOrder
+Purpose: Abstraction for an order placed by a customer.
+Key methods:
+•	UUID getId() – returns the unique order ID.
+•	Customer getCustomer() – returns the customer details.
+•	List<OrderLine> getOrderLines() – lists ordered items.
+•	CreditCard getPaymentMethod() – shows the payment card used.
+•	OrderStatus getStatus() – displays the order’s current state.
 
-class PresetModel {
-  -String manufacturer
-  -String name
-  -SortedSet<String> parts
-  +static PresetModel of(...)
-}
-
-class CustomModel {
-  -String name
-  -SortedSet<String> parts
-  +static CustomModel of(...)
-  +CustomComputerModel withPart(String)
-  +CustomComputerModel withoutPart(String)
-}
-
-class CustomModelFactory {
-  -Set<String> allocatedNames
-  +CustomModel create(...)
-  +void release(CustomComputerModel)
-}
-
-PresetComputerModel <|.. PresetModel
-CustomComputerModel <|.. CustomModel
-
-class Customer {
-  -String identifier
-  -String displayName
-  +static Customer of(...)
-}
-
-class CreditCard {
-  -String number
-  -Date expiry
-  -String holderName
-  +boolean isValid(Date)
-}
-
-class CreditCardFactory {
-  -Set<String> allocatedNumbers
-  +CreditCard register(...)
-  +void release(CreditCard)
-}
-
-enum OrderStatus {
-  PLACED
-  CANCELLED
-  FULFILLED
-}
-
-class OrderLine {
-  -ComputerModel model
-  -int quantity
-  +static OrderLine of(...)
-}
-
-interface CustomerOrder {
-  +UUID getId()
-  +Customer getCustomer()
-  +List<OrderLine> getOrderLines()
-  +CreditCard getPaymentMethod()
-  +Date getPlacedAt()
-  +OrderStatus getStatus()
-}
-
-class StandardOrder {
-  -UUID id
-  -Customer customer
-  -List<OrderLine> orderLines
-  -CreditCard paymentMethod
-  -Date placedAt
-  -OrderStatus status
-  +void markCancelled()
-  +void markFulfilled()
-}
-
-CustomerOrder <|.. StandardOrder
-
-class FulfillmentPlan {
-  -Map<String, Map<String, Integer>> presetModelCounts
-  -Map<String, Integer> customPartCounts
-}
-
-class OrderAnalytics {
-  -Customer largestCustomer
-  -String mostOrderedPresetModel
-  -String presetManufacturer
-  -String mostOrderedCustomPart
-}
-
-class OrderService {
-  -Supplier<Date> clock
-  -Map<UUID, StandardOrder> orders
-  -Map<Customer, Integer> fulfilledByCustomer
-  -Map<String, Map<String, Integer>> fulfilledPresetCounts
-  -Map<String, Integer> fulfilledCustomParts
-  +CustomerOrder placeOrder(...)
-  +void cancelOrder(UUID)
-  +FulfillmentPlan fulfillOrder(UUID)
-  +OrderAnalytics analytics()
-}
-
-OrderService --> OrderLine
-OrderService --> FulfillmentPlan
-OrderService --> OrderAnalytics
-OrderService --> CustomerOrder
-OrderService --> CreditCard
-OrderService --> Customer
-OrderService --> ComputerModel
-
-StandardOrder --> OrderLine
-StandardOrder --> CreditCard
-StandardOrder --> Customer
-
-CustomModelFactory --> CustomModel
-CreditCardFactory --> CreditCard
-
-@enduml
-```
+Core Classes
+PresetModel (implements ComputerModel, PresetComputerModel)
+Role: Immutable value object representing a vendor-provided model.
+Key fields:
+ 	• String manufacturer
+• String name
+• SortedSet<String> parts
+Important methods:
+• static PresetModel of(...) – validated factory constructor
+CustomModel (implements ComputerModel, CustomComputerModel)
+Role: Mutable/functional value object for a user-customizable model.
+Key fields:
+• String name
+• SortedSet<String> parts
+Important methods:
+• static CustomModel of(...)
+• CustomComputerModel withPart(String)
+• CustomComputerModel withoutPart(String)
+Customer
+Role: Customer entity.
+•	Customer Represents a customer of a retailer (immutabel class).
+•	It has two columns: id (unique ID) and name.
+•	constructed with a factory method of() checking both values aren't blank.
+•	Equality only depends on the identifier, which is also met by hashCode().
+•	Use requireText() because we don't want null or empty inputs.
+Key fields:
+         String identifier
+String displayName
+Important methods: static Customer of(...) – factory ensuring identifiers are valid
+OrderLine
+Role: Line item inside an order: a model and its quantity.
+Key fields:
+• ComputerModel model
+• int quantity
+Important methods:
+• static OrderLine of(...) – validates quantity (>0)
+CreditCard
+Role: Payment method value object with basic validation.
+Key fields:
+• String number
+• Date expiry
+• String holderName
+Important methods:
+• boolean isValid(Date) – expiry check and simple structure checks
+StandardOrder (implements CustomerOrder)
+Role: Aggregate root for orders; holds lines, payment, and lifecycle state.
+Key fields:
+• UUID id
+• Customer customer
+• List<OrderLine> orderLines
+• CreditCard paymentMethod
+• Date placedAt
+• OrderStatus status
+Important methods:
+• void markCancelled()
+• void markFulfilled()
+Services and Factories
+OrderService
+Role: Application service orchestrating the order lifecycle and fulfillment.
+Key fields:
+• Supplier<Date> clock – injectable time source for testability
+• Map<UUID, StandardOrder> orders – in-memory order store
+• Map<Customer, Integer> fulfilledByCustomer – fulfilment counts per customer
+• Map<String, Map<String, Integer>> fulfilledPresetCounts – manufacturer→model→count
+• Map<String, Integer> fulfilledCustomParts – part→count
+Key methods:
+• CustomerOrder placeOrder(...) – validates and records a new order
+• void cancelOrder(UUID) – transitions to CANCELLED when allowed
+• FulfillmentPlan fulfillOrder(UUID) – marks as FULFILLED and updates counts
+• OrderAnalytics analytics() – exposes computed insights
+FulfillmentPlan
+Role: Result object summarizing what was fulfilled.
+Key fields:
+• Map<String, Integer> presetModelCounts
+• Map<String, Integer> customPartCounts
+OrderAnalytics
+Role: Read-only analytics over historical fulfilments.
+Key methods:
+• Customer largestCustomer()
+• String mostOrderedPresetModel()
+• String presetManufacturer()
+• String mostOrderedCustomPart()
+CustomModelFactory
+Role: Factory managing allocation/uniqueness of custom model names.
+Key fields:
+• Set<String> allocatedNames
+Key methods:
+• CustomModel create(...) – ensures unique, valid names
+• void release(CustomComputerModel) – frees the name when discarded
+CreditCardFactory
+Role: Factory managing allocation/registration of credit cards.
+Key fields:
+• Set<String> allocatedNumbers
+Key methods:
+• CreditCard register(...) – validates/records a new card
+• void release(CreditCard) – removes a card from active set
 
 
