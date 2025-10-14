@@ -10,7 +10,7 @@ Computer Models - Computer models have an interface hierarchy (ComputerModel -Pr
 - Fulfilment generates a FulfillmentPlan which sums manufacturer and custom part count; analytics are done on-a-fly to eliminate the need to re-process order history.
 JUnit 5 tests are all validation, immutability, lifecycle rules, and analytics edge cases (such as alphabetical tie-breakers).
 
- ###                                      Interfaces
+ ### Interfaces
 # 1.	ComputerModel
 - Purpose:   Describes a template of computer model in general that can be offered by the vendor.
 - Type: It’s an interface (not a class) which means it does not provide the implementation in code.
