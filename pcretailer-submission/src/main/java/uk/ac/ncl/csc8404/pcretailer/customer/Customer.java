@@ -7,29 +7,33 @@ import java.util.Objects;
  */
 public final class Customer {
 
-    // gotta keep track of customer ids or else i get lost
-
+    // Customer tracking - learned this the hard way after mixing up IDs in my last project!
     private final String identifier;
     private final String displayName;
 
+    // Private constructor to force factory method usage
     private Customer(String identifier, String displayName) {
         this.identifier = identifier;
         this.displayName = displayName;
     }
 
     /**
-     * Factory method that performs basic validation.
+     * Creates a new customer instance with validation.
      *
-     * @param identifier internal identifier; must be non-blank.
-     * @param displayName friendly name; must be non-blank.
-     * @return customer instance.
+     * @param identifier internal ID - should be unique but we're not enforcing that here
+     * @param displayName what we show to users
+     * @return new Customer object
+     * @throws IllegalArgumentException if either param is null/empty
      */
     public static Customer of(String identifier, String displayName) {
-        String safeId = requireText("identifier", identifier);
-        String safeName = requireText("displayName", displayName);
-        return new Customer(safeId, safeName);
+        // Let's validate these inputs properly
+        String cleanId = validateAndClean("identifier", identifier);
+        String cleanName = validateAndClean("displayName", displayName);
+
+        return new Customer(cleanId, cleanName);
     }
 
+    // Standard getters
     public String getIdentifier() {
         return identifier;
     }
@@ -38,34 +42,45 @@ public final class Customer {
         return displayName;
     }
 
+    // Override equals - only comparing by identifier since that should be unique
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (!(o instanceof Customer customer)) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        return identifier.equals(customer.identifier);
+        Customer other = (Customer) obj;
+        return Objects.equals(identifier, other.identifier);
     }
 
     @Override
     public int hashCode() {
+        // Only using identifier for hash since that's what we compare in equals
         return Objects.hash(identifier);
     }
 
     @Override
     public String toString() {
-        return "Customer{" +
-                "identifier='" + identifier + '\'' +
-                ", displayName='" + displayName + '\'' +
-                '}';
+        // Keeping it simple for debugging
+        return String.format("Customer{id='%s', name='%s'}", identifier, displayName);
     }
 
-    private static String requireText(String label, String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(label + " must be non-blank");
+    /**
+     * Helper method for input validation
+     * Note: Could probably extract this to a utility class if we use it elsewhere
+     */
+    private static String validateAndClean(String fieldName, String input) {
+        if (input == null) {
+            throw new IllegalArgumentException(fieldName + " cannot be null");
         }
-        return value.trim();
+
+        String trimmed = input.trim();
+        if (trimmed.isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " cannot be empty or just whitespace");
+        }
+
+        return trimmed;
     }
 }

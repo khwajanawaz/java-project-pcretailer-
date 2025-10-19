@@ -35,8 +35,8 @@ class OrderServiceTest {
 
     @Test
     void placeOrderRejectsExpiredCard() {
-        Customer customer = Customer.of("C-1", "Jane Doe");
-        CreditCard expired = cardFactory.register("13572468", buildDate(2020, Calendar.JANUARY, 1), "Jane Doe");
+        Customer customer = Customer.of("C-1", "naseema");
+        CreditCard expired = cardFactory.register("13572468", buildDate(2020, Calendar.JANUARY, 1), "naseema");
         PresetModel preset = PresetModel.of("ACME", "Starter", List.of("CPU"));
         assertThrows(IllegalArgumentException.class,
                 () -> service.placeOrder(customer, expired, List.of(OrderLine.of(preset, 1))));
@@ -53,8 +53,8 @@ class OrderServiceTest {
 
     @Test
     void fulfilmentProducesPlanAndAnalytics() {
-        Customer alice = Customer.of("C-1", "Alice");
-        CreditCard card = cardFactory.register("12345670", buildDate(2030, Calendar.JANUARY, 1), "Alice");
+        Customer alice = Customer.of("C-1", "nawaz");
+        CreditCard card = cardFactory.register("12345670", buildDate(2030, Calendar.JANUARY, 1), "nawaz");
 
         PresetModel acmeBolt = PresetModel.of("ACME", "Bolt", List.of("CPU", "RAM"));
         PresetModel techNano = PresetModel.of("TechCorp", "Nano", List.of("CPU", "SSD"));
@@ -112,7 +112,7 @@ class OrderServiceTest {
 
     @Test
     void cannotFulfilCancelledOrder() {
-        Customer customer = Customer.of("C-3", "Charlie");
+        Customer customer = Customer.of("C-3", "fathima");
         CreditCard card = cardFactory.register("45678123", buildDate(2032, Calendar.JANUARY, 1), "khwaja");
         PresetModel preset = PresetModel.of("ACME", "Starter", List.of("CPU"));
 

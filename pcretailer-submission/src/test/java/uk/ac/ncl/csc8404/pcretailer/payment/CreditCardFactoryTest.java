@@ -15,17 +15,17 @@ class CreditCardFactoryTest {
 
     @Test
     void registersUniqueCards() {
-        CreditCard card = factory.register("12345678", futureDate(2030, Calendar.JANUARY, 1), "Jane Doe");
+        CreditCard card = factory.register("12345678", futureDate(2030, Calendar.JANUARY, 1), "naseema");
         assertEquals("12345678", card.getNumber());
-        assertEquals("Jane Doe", card.getHolderName());
+        assertEquals("naseema", card.getHolderName());
         assertTrue(card.isValid(futureDate(2025, Calendar.JANUARY, 1)));
         assertThrows(IllegalStateException.class,
-                () -> factory.register("12345678", futureDate(2030, Calendar.FEBRUARY, 1), "John Doe"));
+                () -> factory.register("12345678", futureDate(2030, Calendar.FEBRUARY, 1), "naseema"));
     }
 
     @Test
     void detectsExpiredCards() {
-        CreditCard card = factory.register("87654321", futureDate(2024, Calendar.JANUARY, 1), "Grace Hopper");
+        CreditCard card = factory.register("87654321", futureDate(2024, Calendar.JANUARY, 1), "jai");
         assertFalse(card.isValid(futureDate(2025, Calendar.JANUARY, 1)));
     }
 
